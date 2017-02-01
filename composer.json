@@ -1,0 +1,12 @@
+{
+  "require": {
+    "symfony/console": "~2.0",
+    "guzzlehttp/guzzle": "^6.2",
+    "symfony/finder": "^3.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "Awps\\": "src"
+    }
+  }
+}
