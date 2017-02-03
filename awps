@@ -7,7 +7,7 @@ use Symfony\Component\Console\Application;
 
 require 'vendor/autoload.php';
 
-$app = new Application('AWPS Installer', '1.0');
+$app = new Application('AWPS Installer', '@package_version@');
 
 $app->add(new NewCommand(new GuzzleHttp\Client()));
 
