@@ -13,110 +13,119 @@ use ZipArchive;
 
 class NewCommand extends Command
 {
-    private $client;
-    private $textDomain;
+	private $client;
+	private $textDomain;
 
-    public function __construct(ClientInterface $client)
-    {
-        $this->client = $client;
+	public function __construct(ClientInterface $client)
+	{
+		$this->client = $client;
 
-        parent::__construct();
-    }
+		parent::__construct();
+	}
 
-    public function configure()
-    {
-        $this->setName('new')
-          ->setDescription('Create a new AWPS Theme installation')
-          ->addArgument('name', InputArgument::REQUIRED, 'Insert the folder name')
-          ->addOption('textdomain', 'td', InputOption::VALUE_OPTIONAL, 'Specify the text domain of your Theme', 'your-theme');
-    }
+	public function configure()
+	{
+		$this->setName('new')
+		->setDescription('Create a new AWPS Theme installation')
+		->addArgument('name', InputArgument::REQUIRED, 'Insert the folder name');
+	}
 
-    public function execute(InputInterface $input, OutputInterface $output)
-    {
-        $directory = getcwd().'/'.$input->getArgument('name');
+	public function execute(InputInterface $input, OutputInterface $output)
+	{
+		$directory = getcwd().'/'.$input->getArgument('name');
 
-        $output->writeln('<info>Summoning application..</info>');
+		$output->writeln('<info>Summoning application..</info>');
 
-        $this->assertApplicationDoesNotExists($directory, $output);
+		$this->assertApplicationDoesNotExists($directory, $output);
 
-        $this->assertLocationInsideWordPress($directory, $output);
+		$this->assertLocationInsideWordPress($directory, $output);
 
-        $output->writeln('<info>Downloading Package..</info>');
+		$output->writeln('<info>Downloading Package..</info>');
 
-        $this->download($ZipFile = $this->makeFileName())
-          ->extract($ZipFile, $directory)
-          ->cleanUp($ZipFile);
+		$this->download($ZipFile = $this->makeFileName())
+		->extract($ZipFile, $directory, $output)
+		->cleanUp($ZipFile);
 
-        $this->askTextDomain($input, $output);
+		$output->writeln('<info>Updating config files..</info>');
 
-        // rename everything (namespace, text-domain)
+		// transfer config file to base root
+		$this->moveConfig($directory, $output);
 
-        // transfer config file to base root
+		// duplicate .env file
 
-        // duplicate .env file
+		$output->writeln('<comment>Application ready, Happy Coding!</comment>');
+	}
 
-        $output->writeln('<comment>Application ready, Happy Coding!</comment>');
-    }
+	private function assertApplicationDoesNotExists($directory, OutputInterface $output)
+	{
+		if (is_dir($directory)) {
+			$output->writeln('<error>Folder name already exists!</error>');
+			exit(1);
+		}
+	}
 
-    private function assertApplicationDoesNotExists($directory, OutputInterface $output)
-    {
-        if (is_dir($directory)) {
-            $output->writeln('<error>Folder name already exists!</error>');
-            exit(1);
-        }
-    }
+	private function assertLocationInsideWordPress($directory, OutputInterface $output)
+	{
+		if (!strpos(dirname($directory), 'wp-content')) {
+			$output->writeln('<error>This is not a WordPress theme directory!</error>');
+			exit(1);
+		}
+	}
 
-    private function assertLocationInsideWordPress($directory, OutputInterface $output)
-    {
-        if (!strpos(dirname($directory), 'wp-content')) {
-            $output->writeln('<error>This is not a WordPress theme directory!</error>');
-            exit(1);
-        }
-    }
+	private function makeFileName()
+	{
+		return getcwd().'/awps_'.md5(time().uniqid()).'.zip';
+	}
 
-    private function askTextDomain(InputInterface $input, OutputInterface $output)
-    {
-        $helper = $this->getHelper('question');
+	private function download($zipFile)
+	{
+		$response = $this->client->get('https://github.com/Alecaddd/awps/archive/master.zip')->getBody();
 
-        $question = new Question('What is the text-domain of your theme?', 'your-theme');
+		file_put_contents($zipFile, $response);
 
-        $this->textDomain = $helper->ask($input, $output, $question);
+		return $this;
+	}
 
-        return $this;
-    }
+	private function extract($ZipFile, $directory, OutputInterface $output)
+	{
+		$archive = new ZipArchive();
 
-    private function makeFileName()
-    {
-        return getcwd().'/awps_'.md5(time().uniqid()).'.zip';
-    }
+		$archive->open($ZipFile);
 
-    private function download($zipFile)
-    {
-        $response = $this->client->get('https://github.com/Alecaddd/awps/archive/master.zip')->getBody();
+		$archive->extractTo($directory);
 
-        file_put_contents($zipFile, $response);
+		$archive->close();
 
-        return $this;
-    }
+		if (!empty(shell_exec("mv ".$directory."/awps-master/* ".$directory."/awps-master/.env.example ".$directory."/awps-master/.gitignore  ".$directory))){
+			$output->writeln('<comment>Unable to move files from master folder!</comment>');
 
-    private function extract($ZipFile, $directory)
-    {
-        $archive = new ZipArchive();
+			return $this;
+		}
 
-        $archive->open($ZipFile);
+		rmdir($directory."/awps-master");
 
-        $archive->extractTo($directory);
+		return $this;
+	}
 
-        $archive->close();
+	private function cleanUp($ZipFile)
+	{
+		@chmod($ZipFile, 0777);
+		@unlink($ZipFile);
 
-        return $this;
-    }
+		return $this;
+	}
 
-    private function cleanUp($ZipFile)
-    {
-        @chmod($ZipFile, 0777);
-        @unlink($ZipFile);
+	private function moveConfig($directory, OutputInterface $output)
+	{
+		if (!empty(shell_exec("mv ".$directory."/wp-config.sample.php ../../"))) {
+			$output->writeln('<comment>Unable to move the wp-config.sample.php file, be sure to move it in the base directory!</comment>');
+		}
 
-        return $this;
-    }
+		if (!empty(shell_exec("mv ".$directory."/.env.example ../../.env"))) {
+			$output->writeln('<comment>Unable to move the .env.example file, be sure to move it in the base directory and rename it as .env!</comment>');
+		}
+
+		return $this;
+	}
+
 }
