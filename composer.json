@@ -1,12 +1,14 @@
 {
-  "require": {
-    "symfony/console": "^3.2",
-    "guzzlehttp/guzzle": "^6.2",
-    "symfony/finder": "^3.2"
-  },
-  "autoload": {
-    "psr-4": {
-      "Awps\\": "src"
-    }
-  }
+	"name": "alecaddd/awps-cli",
+	"description": "Nifty Command Line Application to quickly setup a new AWPS theme in WordPress",
+	"require": {
+		"symfony/console": "^3.2",
+		"guzzlehttp/guzzle": "^6.2",
+		"symfony/finder": "^3.2"
+	},
+	"autoload": {
+		"psr-4": {
+			"Awps\\": "src"
+		}
+	}
 }
