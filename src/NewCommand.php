@@ -49,8 +49,6 @@ class NewCommand extends Command
 		// transfer config file to base root
 		$this->moveConfig($directory, $output);
 
-		// duplicate .env file
-
 		$output->writeln('<comment>Application ready, Happy Coding!</comment>');
 	}
 
