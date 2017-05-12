@@ -14,7 +14,7 @@ if (file_exists(__DIR__.'/vendor/autoload.php')) {
 use Awps\NewCommand;
 use Symfony\Component\Console\Application;
 
-$app = new Application('AWPS Installer', '1.0.3');
+$app = new Application('AWPS Installer', '1.0.4');
 
 $app->add(new NewCommand(new GuzzleHttp\Client()));
 
