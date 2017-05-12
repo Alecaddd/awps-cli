@@ -94,7 +94,7 @@ class NewCommand extends Command
 
 		$archive->close();
 
-		if (!empty(shell_exec("mv ".$directory."/awps-master/* ".$directory."/awps-master/.env.example ".$directory."/awps-master/.gitignore  ".$directory))){
+		if (!empty(shell_exec("mv ".$directory."/awps-master/* ".$directory."/awps-master/.[!.]*  ".$directory))){
 			$output->writeln('<comment>Unable to move files from master folder!</comment>');
 
 			return $this;
