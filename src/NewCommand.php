@@ -8,6 +8,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use GuzzleHttp\ClientInterface;
+use Symfony\Component\Console\Question\Question;
 use ZipArchive;
 
 class NewCommand extends Command
@@ -30,7 +31,8 @@ class NewCommand extends Command
 
 	public function execute(InputInterface $input, OutputInterface $output)
 	{
-		$directory = getcwd().'/'.$input->getArgument('name');
+		$themeName = $input->getArgument('name');
+		$directory = getcwd().'/'.$themeName;
 
 		$output->writeln('<info>Summoning application..</info>');
 
@@ -38,10 +40,15 @@ class NewCommand extends Command
 
 		$this->assertLocationInsideWordPress($directory, $output);
 
+		$helper = $this->getHelper("question");
+		$question = new Question("Change Namespace? <info>(Awps)</info> ", "Awps");
+		$namespace = $helper->ask($input, $output, $question);
+
 		$output->writeln('<info>Downloading Package..</info>');
 
 		$this->download($ZipFile = $this->makeFileName())
 		->extract($ZipFile, $directory, $output)
+		->renameNamespaces($directory, $output, $themeName, $namespace)
 		->cleanUp($ZipFile);
 
 		$output->writeln('<info>Updating config files..</info>');
@@ -101,6 +108,45 @@ class NewCommand extends Command
 		rmdir($directory."/awps-master");
 
 		return $this;
+	}
+
+	private function renameNamespaces($directory, OutputInterface $output, $themeName = null, $namespace = null)
+	{
+		if(is_null($themeName) && is_null($namespace)) return $this;
+
+		$file_info = array();
+
+		$this->recursiveScanFiles($directory, $file_info);
+
+		foreach($file_info as $file) {
+			$str = file_get_contents($file);
+
+			if(!is_null($namespace)) {
+				$str = str_replace( "Awps", $namespace, $str );
+				$str = str_replace( "awps", $namespace, $str );
+			}
+			
+			if(!is_null($themeName)) {
+				$str = str_replace( "Alecaddd WordPress Starter theme", $themeName, $str );
+			}
+
+			file_put_contents($file, $str);
+		}
+
+		return $this;
+	}
+
+	private function recursiveScanFiles($path, &$file_info){
+		$path = rtrim($path, '/');
+		if(!is_dir($path)) $file_info[] = $path;
+		else {
+			$files = scandir($path);
+			foreach($files as $file) {
+				if($file != '.' && $file != '..') {
+					$this->recursiveScanFiles($path . '/' . $file, $file_info);
+				}
+			}
+		}
 	}
 
 	private function cleanUp($ZipFile)
