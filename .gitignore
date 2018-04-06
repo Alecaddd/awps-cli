@@ -26,3 +26,6 @@
 
 # System related files
 .DS_Store
+
+# VSCode workspace
+.vscode
