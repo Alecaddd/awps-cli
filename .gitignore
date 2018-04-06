@@ -23,6 +23,7 @@
 
 # Composer PHAR
 /composer.phar
+composer.lock
 
 # System related files
 .DS_Store
