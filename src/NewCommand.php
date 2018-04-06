@@ -1,4 +1,13 @@
 <?php
+/**
+ * Generate a new installation of AWPS
+ *
+ * @category CLI
+ * @package  Awps-cli
+ * @author   Alessandro Castellani <me@alecaddd.com>
+ * @license  http://opensource.org/licenses/gpl-3.0 GNU General Public License, version 3 (GPLv3)
+ * @link     http://alecaddd.com
+ */
 
 namespace Awps;
 
@@ -11,6 +20,15 @@ use GuzzleHttp\ClientInterface;
 use Symfony\Component\Console\Question\Question;
 use ZipArchive;
 
+/**
+ * Generate a new installation of AWPS
+ *
+ * @category CLI
+ * @package  Awps-cli
+ * @author   Alessandro Castellani <me@alecaddd.com>
+ * @license  http://opensource.org/licenses/gpl-3.0 GNU General Public License, version 3 (GPLv3)
+ * @link     http://alecaddd.com
+ */
 class NewCommand extends Command
 {
 	private $client;
@@ -22,13 +40,25 @@ class NewCommand extends Command
 		parent::__construct();
 	}
 
+	/**
+	 * Configure the CLI command
+	 *
+	 * @return void
+	 */
 	public function configure()
 	{
 		$this->setName('new')
-		->setDescription('Create a new AWPS Theme installation')
-		->addArgument('name', InputArgument::REQUIRED, 'Insert the folder name');
+				->setDescription('Create a new AWPS Theme installation')
+				->addArgument('name', InputArgument::REQUIRED, 'Insert the folder name');
 	}
 
+	/**
+	 * Execute the creation command
+	 *
+	 * @param InputInterface $input
+	 * @param OutputInterface $output
+	 * @return void
+	 */
 	public function execute(InputInterface $input, OutputInterface $output)
 	{
 		$themeName = $input->getArgument('name');
@@ -41,15 +71,16 @@ class NewCommand extends Command
 		$this->assertLocationInsideWordPress($directory, $output);
 
 		$helper = $this->getHelper("question");
-		$question = new Question("Change Namespace? <info>(Awps)</info> ", "Awps");
-		$namespace = $helper->ask($input, $output, $question);
+
+		$question = new Question("PHP Namespace of your theme? <info>(awps)</info> ", "awps");
+		$namespace = $helper->ask($input, $output, strtolower($question));
 
 		$output->writeln('<info>Downloading Package..</info>');
 
 		$this->download($ZipFile = $this->makeFileName())
-		->extract($ZipFile, $directory, $output)
-		->renameNamespaces($directory, $output, $themeName, $namespace)
-		->cleanUp($ZipFile);
+				->extract($ZipFile, $directory, $output)
+				->renameNamespaces($directory, $output, $themeName, $namespace)
+				->cleanUp($ZipFile);
 
 		$output->writeln('<info>Updating config files..</info>');
 
@@ -59,6 +90,13 @@ class NewCommand extends Command
 		$output->writeln('<comment>Application ready, Happy Coding!</comment>');
 	}
 
+	/**
+	 * Assert if the folder doesn't already exists
+	 *
+	 * @param string $directory
+	 * @param OutputInterface $output
+	 * @return void
+	 */
 	private function assertApplicationDoesNotExists($directory, OutputInterface $output)
 	{
 		if (is_dir($directory)) {
@@ -67,6 +105,13 @@ class NewCommand extends Command
 		}
 	}
 
+	/**
+	 * Assert the cli was triggerd inside a WordPress directory
+	 *
+	 * @param string $directory
+	 * @param OutputInterface $output
+	 * @return void
+	 */
 	private function assertLocationInsideWordPress($directory, OutputInterface $output)
 	{
 		if (!strpos(dirname($directory), 'wp-content')) {
@@ -75,11 +120,22 @@ class NewCommand extends Command
 		}
 	}
 
+	/**
+	 * Generate a temporary file name for the downloaded zip file
+	 *
+	 * @return void
+	 */
 	private function makeFileName()
 	{
 		return getcwd().'/awps_'.md5(time().uniqid()).'.zip';
 	}
 
+	/**
+	 * Download the lates AWPS release
+	 *
+	 * @param string $zipFile
+	 * @return void
+	 */
 	private function download($zipFile)
 	{
 		$response = $this->client->get('https://github.com/Alecaddd/awps/archive/master.zip')->getBody();
@@ -89,6 +145,14 @@ class NewCommand extends Command
 		return $this;
 	}
 
+	/**
+	 * Extract the downlaod zip
+	 *
+	 * @param string $ZipFile
+	 * @param string $directory
+	 * @param OutputInterface $output
+	 * @return void
+	 */
 	private function extract($ZipFile, $directory, OutputInterface $output)
 	{
 		$archive = new ZipArchive();
@@ -110,24 +174,35 @@ class NewCommand extends Command
 		return $this;
 	}
 
+	/**
+	 * Rename the application PHP namespace
+	 *
+	 * @param string $directory
+	 * @param OutputInterface $output
+	 * @param string $themeName
+	 * @param string $namespace
+	 * @return void
+	 */
 	private function renameNamespaces($directory, OutputInterface $output, $themeName = null, $namespace = null)
 	{
-		if(is_null($themeName) && is_null($namespace)) return $this;
+		if (is_null($themeName) && is_null($namespace)) {
+			return $this;
+		}
 
 		$file_info = array();
 
 		$this->recursiveScanFiles($directory, $file_info);
 
-		foreach($file_info as $file) {
+		foreach ($file_info as $file) {
 			$str = file_get_contents($file);
 
-			if(!is_null($namespace)) {
-				$str = str_replace( "Awps", $namespace, $str );
-				$str = str_replace( "awps", $namespace, $str );
+			if (!is_null($namespace)) {
+				$str = str_replace("Awps", $namespace, $str);
+				$str = str_replace("awps", $namespace, $str);
 			}
 			
-			if(!is_null($themeName)) {
-				$str = str_replace( "Alecaddd WordPress Starter theme", $themeName, $str );
+			if (!is_null($themeName)) {
+				$str = str_replace("Alecaddd WordPress Starter theme", $themeName, $str);
 			}
 
 			file_put_contents($file, $str);
@@ -136,13 +211,15 @@ class NewCommand extends Command
 		return $this;
 	}
 
-	private function recursiveScanFiles($path, &$file_info){
+	private function recursiveScanFiles($path, &$file_info)
+	{
 		$path = rtrim($path, '/');
-		if(!is_dir($path)) $file_info[] = $path;
-		else {
+		if (!is_dir($path)) {
+			$file_info[] = $path;
+		} else {
 			$files = scandir($path);
-			foreach($files as $file) {
-				if($file != '.' && $file != '..') {
+			foreach ($files as $file) {
+				if ($file != '.' && $file != '..') {
 					$this->recursiveScanFiles($path . '/' . $file, $file_info);
 				}
 			}
@@ -169,5 +246,4 @@ class NewCommand extends Command
 
 		return $this;
 	}
-
 }
