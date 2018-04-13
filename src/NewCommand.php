@@ -95,7 +95,7 @@ class NewCommand extends Command
 
 		$this->download($ZipFile = $this->makeFileName())
 				->extract($ZipFile, $directory, $output)
-				->renameNamespaces($directory, $output, $folderName, $namespace)
+				->renameAllTheThings($directory, $output, $themeName, $namespace, $description)
 				->cleanUp($ZipFile);
 
 		$output->writeln('<info>Updating config files..</info>');
@@ -195,13 +195,14 @@ class NewCommand extends Command
 	 *
 	 * @param string $directory
 	 * @param OutputInterface $output
-	 * @param string $folderName
+	 * @param string $themeName
 	 * @param string $namespace
+	 * @param string $description
 	 * @return void
 	 */
-	private function renameNamespaces($directory, OutputInterface $output, $folderName = null, $namespace = null)
+	private function renameAllTheThings($directory, OutputInterface $output, $themeName = null, $namespace = null, $description = null)
 	{
-		if (is_null($folderName) && is_null($namespace)) {
+		if (is_null($themeName) && is_null($namespace) && is_null($description)) {
 			return $this;
 		}
 
@@ -212,13 +213,16 @@ class NewCommand extends Command
 		foreach ($file_info as $file) {
 			$str = file_get_contents($file);
 
+			if (! is_null($themeName)) {
+				$str = str_replace("Awps", $themeName, $str);
+			}
+
 			if (! is_null($namespace)) {
-				$str = str_replace("Awps", $namespace, $str);
 				$str = str_replace("awps", $namespace, $str);
 			}
 			
-			if (! is_null($folderName)) {
-				$str = str_replace("Alecaddd WordPress Starter theme", $folderName, $str);
+			if (! is_null($description)) {
+				$str = str_replace("Alecaddd WordPress Starter theme", $description, $str);
 			}
 
 			file_put_contents($file, $str);
@@ -257,10 +261,8 @@ class NewCommand extends Command
 		}
 
 		if (is_file("../../.env")) {
-			if (! empty(shell_exec("mv ../../.env ../../.env.bk"))) {
-				$output->writeln('<comment>Existing .env detected in the WordPress root directory, unable to create a safe backup!</comment>');
-				return $this;
-			}
+			$output->writeln('<comment>Existing .env detected in the WordPress root directory, nothing to do here!</comment>');
+			return $this;
 		}
 
 		if (! empty(shell_exec("mv ".$directory."/.env.example ../../.env"))) {
