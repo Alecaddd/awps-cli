@@ -82,13 +82,13 @@ class NewCommand extends Command
 
 		$helper = $this->getHelper("question");
 
-		$question = new Question("Name of your theme? <info>(Awps)</info> ", "Awps");
+		$question = new Question("Name of your theme? <info>(Awps)</info> ", null);
 		$themeName = $helper->ask($input, $output, $question);
 
-		$question = new Question("PHP Namespace of your theme? <info>(awps)</info> ", "awps");
+		$question = new Question("PHP Namespace of your theme? <info>(Awps)</info> ", null);
 		$namespace = $helper->ask($input, $output, $question);
 
-		$question = new Question("Description? <info>(Alecaddd WordPress Starter theme)</info> ", "Alecaddd WordPress Starter theme");
+		$question = new Question("Description? <info>(Alecaddd WordPress Starter theme)</info> ", null);
 		$description = $helper->ask($input, $output, $question);
 
 		$output->writeln('<info>Downloading Package..</info>');
@@ -206,6 +206,8 @@ class NewCommand extends Command
 			return $this;
 		}
 
+		$output->writeln('<info>Updating namespaces..</info>');
+
 		$file_info = array();
 
 		$this->recursiveScanFiles($directory, $file_info);
@@ -213,12 +215,16 @@ class NewCommand extends Command
 		foreach ($file_info as $file) {
 			$str = file_get_contents($file);
 
-			if (! is_null($themeName)) {
-				$str = str_replace("Awps", $themeName, $str);
-			}
-
 			if (! is_null($namespace)) {
 				$str = str_replace("awps", $namespace, $str);
+				$str = str_replace("use Awps", "use " . $namespace, $str);
+				$str = str_replace("namespace Awps", "namespace " . $namespace, $str);
+				$str = str_replace("Awps\\", $namespace . "\\", $str);
+				$str = str_replace("Awps\Init", $namespace . "\Init", $str);
+			}
+
+			if (! is_null($themeName)) {
+				$str = str_replace("Awps", $themeName, $str);
 			}
 			
 			if (! is_null($description)) {
