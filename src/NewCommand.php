@@ -88,14 +88,29 @@ class NewCommand extends Command
 		$question = new Question("PHP Namespace of your theme? <info>(Awps)</info> ", null);
 		$namespace = $helper->ask($input, $output, $question);
 
+		$question = new Question("Website URL <info>(Current installation URL)</info> ", null);
+		$wp_url = $helper->ask($input, $output, $question);
+
 		$question = new Question("Description? <info>(Alecaddd WordPress Starter theme)</info> ", null);
 		$description = $helper->ask($input, $output, $question);
 
+		$question = new Question("Theme URI? <info>(Website URL for theme)</info> ", null);
+		$themeURI = $helper->ask($input, $output, $question);
+
+		$question = new Question("Author? <info>(Theme Author)</info> ", null);
+		$author = $helper->ask($input, $output, $question);
+
+		$question = new Question("Author URI? <info>(Theme Author website)</info> ", null);
+		$authorURI = $helper->ask($input, $output, $question);
+
+		$question = new Question("Version? <info>(Theme version)</info> ", null);
+		$themeVersion = $helper->ask($input, $output, $question);
+		
 		$output->writeln('<info>Downloading Package..</info>');
 
 		$this->download($ZipFile = $this->makeFileName())
 				->extract($ZipFile, $directory, $output)
-				->renameAllTheThings($directory, $output, $themeName, $namespace, $description)
+				->renameAllTheThings($directory, $output, $themeName, $namespace, $wp_url , $description, $themeURI, $author, $authorURI, $themeVersion)
 				->cleanUp($ZipFile);
 
 		$output->writeln('<info>Updating config files..</info>');
@@ -198,11 +213,16 @@ class NewCommand extends Command
 	 * @param string $themeName
 	 * @param string $namespace
 	 * @param string $description
+	 * @param string $wp_url
+	 * @param string $themeURI
+	 * @param string $author
+	 * @param string $authorURI
+	 * @param string $themeVersion
 	 * @return void
 	 */
-	private function renameAllTheThings($directory, OutputInterface $output, $themeName = null, $namespace = null, $description = null)
+	private function renameAllTheThings($directory, OutputInterface $output, $themeName = null, $namespace = null, $description = null, $wp_url = null, $themeURI = null, $author = null, $authorURI = null, $themeVersion = null)
 	{
-		if (is_null($themeName) && is_null($namespace) && is_null($description)) {
+		if (is_null($themeName) && is_null($namespace) && is_null($description) && is_null($wp_url) && is_null($themeURI) && is_null($author) && is_null($authorURI) && is_null($themeVersion)) {
 			return $this;
 		}
 
@@ -229,6 +249,27 @@ class NewCommand extends Command
 			
 			if (! is_null($description)) {
 				$str = str_replace("Alecaddd WordPress Starter theme", $description, $str);
+			}
+			
+			if (! is_null($wp_url)) {
+				$str = str_replace("wp.dev", $wp_url, $str);
+				$str = str_replace("www.example.com", $wp_url, $str);
+			}
+			
+			if (! is_null($themeURI)) {
+				$str = str_replace("http://alecaddd.com/wp-starter", $themeURI, $str);
+			}
+			
+			if (! is_null($author)) {
+				$str = str_replace("Alessandro 'Alecaddd' Castellani", $author, $str);
+			}
+			
+			if (! is_null($authorURI)) {
+				$str = str_replace("http://alecaddd.com", $authorURI, $str);
+			}
+			
+			if (! is_null($themeVersion)) {
+				$str = str_replace("3.0.0", $themeVersion, $str);
 			}
 
 			file_put_contents($file, $str);
