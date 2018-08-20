@@ -9,6 +9,6 @@ composer global require "alecaddd/awps-cli"
 
 ## Usage
 
-* Open a Terminal window on the location of your WordPress theme folder
+* Open the location of the theme folder in a Terminal window 
 * Execute the command `awps new your_theme_name`
 * Done!
