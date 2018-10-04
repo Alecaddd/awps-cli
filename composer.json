@@ -1,26 +1,27 @@
 {
-	"name": "alecaddd/awps-cli",
-	"description": "Nifty Command Line Application to quickly setup a new AWPS theme in WordPress",
-	"keywords": ["awps", "wordpress", "themes"],
+    "name": "alecaddd/awps-cli",
+    "description": "Nifty Command Line Application to quickly setup a new AWPS theme in WordPress",
+    "keywords": ["awps", "wordpress", "themes"],
     "license": "GPL-3.0",
     "authors": [
         {
             "name": "Alessandro Castellani",
             "email": "me@alecaddd.com"
         }
-	],
-	"require": {
-		"php": "^5.3.3 || ^7.0",
-		"symfony/console": "^3.2",
-		"guzzlehttp/guzzle": "^6.2",
-		"symfony/finder": "^3.2"
-	},
-	"autoload": {
-		"psr-4": {
-			"Awps\\": "src"
-		}
-	},
-	"bin": [
-		"awps"
-	]
+    ],
+    "require": {
+        "ext-zip": "*",
+        "guzzlehttp/guzzle": "~6.0",
+        "symfony/console": "~3.0|~4.0",
+        "symfony/filesystem": "~3.0|~4.0",
+        "symfony/process": "~3.0|~4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Awps\\": "src"
+        }
+    },
+    "bin": [
+        "awps"
+    ]
 }
