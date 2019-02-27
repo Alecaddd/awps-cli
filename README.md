@@ -12,3 +12,7 @@ composer global require "alecaddd/awps-cli"
 * Open the location of the theme folder in a Terminal window 
 * Execute the command `awps new your_theme_name`
 * Done!
+
+### For Windows Use
+
+* Use the 'git bash' console that comes with git for windows or something else that will mimic a linux environment. Some commands like `mv` need a bash console.
