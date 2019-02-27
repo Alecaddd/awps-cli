@@ -118,6 +118,14 @@ class NewCommand extends Command
 		// transfer config file to base root
 		$this->moveConfig($directory, $output);
 
+
+		$output->writeln('<info>Setting up composer dependencies..</info>');
+		shell_exec("cd ".$directory." && composer install");
+
+		$output->writeln('<info>Setting up NPM dependencies..</info>');
+		shell_exec("cd ".$directory." && npm install");
+		shell_exec("cd ".$directory." && npm run dev");
+
 		$output->writeln('<comment>Application ready, Happy Coding!</comment>');
 	}
 
