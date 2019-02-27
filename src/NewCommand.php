@@ -249,6 +249,7 @@ class NewCommand extends Command
 			
 			if (! is_null($description)) {
 				$str = str_replace("Alecaddd WordPress Starter theme", $description, $str);
+				$str = str_replace("Alecaddd WordPress Starter Theme for savvy developers", $description, $str);
 			}
 			
 			if (! is_null($wp_url)) {
