@@ -120,11 +120,11 @@ class NewCommand extends Command
 
 
 		$output->writeln('<info>Setting up composer dependencies..</info>');
-		shell_exec("cd ".$directory." && composer install");
+		shell_exec("cd ".escapeshellarg($directory)." && composer install");
 
 		$output->writeln('<info>Setting up NPM dependencies..</info>');
-		shell_exec("cd ".$directory." && npm install");
-		shell_exec("cd ".$directory." && npm run dev");
+		shell_exec("cd ".escapeshellarg($directory)." && npm install");
+		shell_exec("cd ".escapeshellarg($directory)." && npm run dev");
 
 		$output->writeln('<comment>Application ready, Happy Coding!</comment>');
 	}
@@ -202,7 +202,7 @@ class NewCommand extends Command
 
 		$archive->close();
 
-		if (! empty(shell_exec("mv ".$directory."/awps-master/* ".$directory."/awps-master/.[!.]*  ".$directory))) {
+		if (! empty(shell_exec("mv ".escapeshellarg($directory)."/awps-master/* ".escapeshellarg($directory)."/awps-master/.[!.]*  ".escapeshellarg($directory)))) {
 			$output->writeln('<comment>Unable to move files from master folder!</comment>');
 
 			return $this;
@@ -312,7 +312,7 @@ class NewCommand extends Command
 
 	private function moveConfig($directory, OutputInterface $output)
 	{
-		if (! empty(shell_exec("mv ".$directory."/wp-config.sample.php ../../"))) {
+		if (! empty(shell_exec("mv ".escapeshellarg($directory)."/wp-config.sample.php ../../"))) {
 			$output->writeln('<comment>Unable to move the wp-config.sample.php file, be sure to move it in the base directory!</comment>');
 		}
 
@@ -321,7 +321,7 @@ class NewCommand extends Command
 			return $this;
 		}
 
-		if (! empty(shell_exec("mv ".$directory."/.env.example ../../.env"))) {
+		if (! empty(shell_exec("mv ".escapeshellarg($directory)."/.env.example ../../.env"))) {
 			$output->writeln('<comment>Unable to move the .env.example file, be sure to move it in the base directory and rename it as .env!</comment>');
 		}
 
